@@ -1,6 +1,6 @@
 ﻿module test_feature_tests;
 
-debug (featureTestTest) {
+debug (featureTest) {
 	import feature_test;
 
 	unittest {

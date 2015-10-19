@@ -1,2 +1,2 @@
 #!/bin/bash
-dub test --debug=featureTest --debug=featureTestTest -- $@
+dub test --debug=featureTest -- $@
