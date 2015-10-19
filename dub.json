@@ -1,8 +1,8 @@
 {
 	"name": "feature-test-d",
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2015, david",
-	"authors": ["david"],
+	"description": "A feature test framework for D applications or libraries that builds on unittest and does not need any external tools.",
+	"copyright": "Copyright © 2015, David Monagle",
+	"authors": ["David Monagle"],
 	"dependencies": {
 		"colorize": "~>1.0.5"
 	},
@@ -12,4 +12,5 @@
 			"name": "feature-test-d"
 		}
 	],
+	"license": "MIT"
 }

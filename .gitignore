@@ -5,3 +5,4 @@ __dummy.html
 *.obj
 __test__feature-test-d__
 libfeature-test-d.a
+dub.userprefs
