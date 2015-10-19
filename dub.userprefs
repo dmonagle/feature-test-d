@@ -1,0 +1,19 @@
+﻿<Properties StartupItem="dub.json">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="feature-test-d" PreferredExecutionTarget="plain" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="dub.json">
+    <Files>
+      <File FileName="dub.json" Line="7" Column="18" />
+      <File FileName="source/feature_test/package.d" Line="1" Column="1" />
+      <File FileName="source/feature_test/shoulds/package.d" Line="1" Column="1" />
+      <File FileName="source/feature_test/shoulds/core.d" Line="1" Column="1" />
+      <File FileName="source/feature_test/shoulds/vibe.d" Line="1" Column="1" />
+      <File FileName="source/feature_test/exceptions.d" Line="1" Column="1" />
+      <File FileName="source/feature_test/runner.d" Line="1" Column="1" />
+      <File FileName="source/feature_test/core.d" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
