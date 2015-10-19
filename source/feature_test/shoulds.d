@@ -1,9 +1,9 @@
-﻿module feature_test.shoulds.core;
+﻿module feature_test.shoulds;
 
 debug (featureTest) {
 	import std.string;
 	import feature_test.exceptions;
-
+	
 	template should(alias operation, string description) {
 		bool should(E)(lazy E expression, string name="Value", string file = __FILE__, typeof(__LINE__) line = __LINE__) {
 			auto eValue = expression;

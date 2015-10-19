@@ -3,7 +3,7 @@
 	"description": "A feature test framework for D applications or libraries that builds on unittest and does not need any external tools.",
 	"copyright": "Copyright © 2015, David Monagle",
 	"authors": ["David Monagle"],
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"dependencies": {
 		"colorize": "~>1.0.5"
 	},

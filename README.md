@@ -19,7 +19,7 @@ There are some example tests included with this library in the file source/test_
 ```D
 module test_feature_tests;
 
-debug (featureTest) { // In the source file that is part of this library, the debug name is featureTestTest
+debug (featureTest) { 
 	import feature_test;
 
 	unittest {
@@ -51,8 +51,6 @@ debug (featureTest) { // In the source file that is part of this library, the de
 ```
 
 So the first line after the module declaration is making the compilation of the test dependant on the debug version "featureTest" being defined. This is how we prevent all of the feature tests being built when either the main code, or only simple unit testing is to be done. 
-
-Note: In the supplied example, the tests will only run if --debug=featureTestTest is called in addition to --debug=featureTest. As the examples fail, we don't want them running for real test scenarios.
 
 A feature is defined by calling the feature helper method, passing in a title and (optionally) a description and then a lamda function in which we define the scenarios for the feature.
 
