@@ -9,7 +9,7 @@ debug (featureTest) {
 						"Wrong".shouldEqual("Right", "String value");
 					});
 			}, "english");
-		
+
 		feature("Ultimate answer", "According to the HGTTG", (f) {
 				f.scenario("What is the correct answer", {
 						f.info("Calculation ultimate answer, please wait 7.5 million years...");
@@ -27,5 +27,14 @@ debug (featureTest) {
 						featureTestPending;
 					});
 			}, "hgttg");
+
+		feature("Null matchers", (f) {
+				f.scenario("null is null", {
+						null.shouldBeNull();
+					});
+				f.scenario("string is not null", {
+						"test".shouldNotBeNull();
+					});
+			});
 	}
 }
