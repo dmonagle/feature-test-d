@@ -2,6 +2,7 @@
 
 debug (featureTest) {
 	import feature_test;
+	import std.typecons;
 
 	unittest {
 		feature("Wrong is never right", (f) {
@@ -34,6 +35,14 @@ debug (featureTest) {
 					});
 				f.scenario("string is not null", {
 						"test".shouldNotBeNull();
+					});
+				f.scenario("Nullable support", {
+						Nullable!int hazy_int;
+						hazy_int.shouldBeNull();
+						hazy_int = 2;
+						hazy_int.shouldNotBeNull();
+						hazy_int.nullify();
+						hazy_int.shouldBeNull();
 					});
 			});
 	}

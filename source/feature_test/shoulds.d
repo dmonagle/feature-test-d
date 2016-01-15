@@ -1,7 +1,7 @@
 ﻿module feature_test.shoulds;
 
 debug (featureTest) {
-	import std.string;
+	import std.string, std.traits, std.typecons;
 	import feature_test.exceptions;
 
 	template should(alias operation, string description) {
@@ -22,10 +22,20 @@ debug (featureTest) {
 
 	alias shouldBeTrue = should!((e) => e ? true : false, "be true");
 	alias shouldBeFalse = should!((e) => e ? false : true, "be false");
-	alias shouldBeNull = should!((e) => e is null, "be null");
-	alias shouldNotBeNull = should!((e) => e !is null, "not be null");
+	alias shouldBeNull = should!((e) => isNull(e), "be null");
+	alias shouldNotBeNull = should!((e) => !isNull(e), "not be null");
 	alias shouldEqual = shouldValue!((e, v) => e == v, "equal");
 	alias shouldBeGreaterThan = shouldValue!((e, v) => e > v, "be greater than");
 	alias shouldBeLessThan = shouldValue!((e, v) => e < v, "be less than");
 	alias shouldNotBeEmpty = should!((e) => e.length ? true : false, "not be empty");
+
+	private {
+		bool isNull(T)(T value) {
+			static if(isInstanceOf!(Nullable, typeof(value))) {
+				return value.isNull;
+			} else {
+				return value is null;
+			}
+		}
+	}
 }
