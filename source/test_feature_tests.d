@@ -2,6 +2,7 @@
 
 debug (featureTest) {
 	import feature_test;
+	import std.typecons;
 
 	unittest {
 		feature("Wrong is never right", (f) {
@@ -9,7 +10,7 @@ debug (featureTest) {
 						"Wrong".shouldEqual("Right", "String value");
 					});
 			}, "english");
-		
+
 		feature("Ultimate answer", "According to the HGTTG", (f) {
 				f.scenario("What is the correct answer", {
 						f.info("Calculation ultimate answer, please wait 7.5 million years...");
@@ -27,5 +28,22 @@ debug (featureTest) {
 						featureTestPending;
 					});
 			}, "hgttg");
+
+		feature("Null matchers", (f) {
+				f.scenario("null is null", {
+						null.shouldBeNull();
+					});
+				f.scenario("string is not null", {
+						"test".shouldNotBeNull();
+					});
+				f.scenario("Nullable support", {
+						Nullable!int hazy_int;
+						hazy_int.shouldBeNull();
+						hazy_int = 2;
+						hazy_int.shouldNotBeNull();
+						hazy_int.nullify();
+						hazy_int.shouldBeNull();
+					});
+			});
 	}
 }
