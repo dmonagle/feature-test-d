@@ -29,13 +29,13 @@ debug (featureTest) {
 	alias shouldBeLessThan = shouldValue!((e, v) => e < v, "be less than");
 	alias shouldNotBeEmpty = should!((e) => e.length ? true : false, "not be empty");
 
-	private {
-		bool isNull(T)(T value) {
-			static if(isInstanceOf!(Nullable, typeof(value))) {
-				return value.isNull;
-			} else {
-				return value is null;
-			}
-		}
-	}
+    /// Returns true if the the given value isNull
+    bool isNull(T)(T value) {
+        static if (is(T == class))
+            return value ? false : true;
+        else static if (hasMember!(T, "isNull"))
+            return value.isNull;
+        else 
+            return false;
+    }
 }
