@@ -6,3 +6,4 @@ __dummy.html
 __test__feature-test-d__
 libfeature-test-d.a
 dub.userprefs
+.DS_Store
