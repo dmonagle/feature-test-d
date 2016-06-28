@@ -211,6 +211,18 @@ feature("POST /api/users", "Add a new user", (f) {
 	)};
 ```
 
+These same hooks can be called on the FeatureTestRunner.instance. The context changes to features
+rather than scenarios. Eg beforeAll features or beforeEach feature.
+
+```D
+	unittest {
+		  FeatureTestRunner.instance.addBeforeAll(() {
+		  	FeatureTestRunner.instance.info("Drop the test database...");
+			dropDatabase()
+		  });
+		  ...
+	}
+```
 
 ### Custom Features
 

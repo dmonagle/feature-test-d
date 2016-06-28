@@ -5,7 +5,14 @@ debug (featureTest) {
 	import std.typecons;
 
 	unittest {
+		  FeatureTestRunner.instance.addBeforeAll(() {
+		  	FeatureTestRunner.instance.info("Runner Before All");
+		  });
+
 		feature("Wrong is never right", (f) {
+				f.addBeforeAll(() {
+					f.info("Feature Before All");
+				});
 				f.scenario("Failing Scenario", {
 						"Wrong".shouldEqual("Right", "String value");
 					});

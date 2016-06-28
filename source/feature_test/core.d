@@ -3,6 +3,7 @@
 debug (featureTest) {
 	import feature_test.exceptions;
 	import feature_test.runner;
+	import feature_test.callbacks;
 
 	import colorize;
 
@@ -10,80 +11,30 @@ debug (featureTest) {
 	import std.algorithm;
 
 	alias FTImplementation = void delegate(FeatureTest);
-	alias FTDelegate = void delegate();
 
 	struct FeatureTestScenario {
 		string name;
-		FTDelegate implementation;
+		FTCallback implementation;
 	}
 
 	class FeatureTest {
-		alias info = FeatureTestRunner.info;
-		
+		mixin FTCallbacks;
+
 		@property ref string name() { return _name; }
 		@property ref string description() { return _description; }
 		@property string[] tags() { return _tags; }
 		@property ref FeatureTestScenario[] scenarios() { return _scenarios; }
 
+		void info(A...)(string fmt, A args) {
+			FeatureTestRunner.instance.info(fmt, args);
+		}
+		
 		void addTags(string[] tags ...) {
 			foreach(tag; tags) { if (!_tags.canFind(tag)) _tags ~= tag; }
 		}
 		
-		final void addBeforeAll(FTDelegate d) {
-			_beforeAllCallbacks ~= d;
-		}
-		
-		final void addBeforeEach(FTDelegate d) {
-			_beforeEachCallbacks ~= d;
-		}
-		
-		final void addAfterEach(FTDelegate d) {
-			_afterEachCallbacks ~= d;
-		}
-		
-		final void addAfterAll(FTDelegate d) {
-			_afterAllCallbacks ~= d;
-		}
-		
-		// To be overridden 
-		void beforeAll() {
-		}
-		
-		// To be overridden 
-		void beforeEach() {
-		}
-		
-		// To be overridden 
-		void afterEach() {
-		}
-		
-		// To be overridden 
-		void afterAll() {
-		}
-		
-		void scenario(string name, FTDelegate implementation) {
+		void scenario(string name, FTCallback implementation) {
 			_scenarios ~= FeatureTestScenario(name, implementation);
-		}
-		
-	package:
-		void _beforeAll() {
-			beforeAll;
-			runCallbacks(_beforeAllCallbacks);
-		}
-		
-		void _beforeEach() {
-			beforeEach;
-			runCallbacks(_beforeEachCallbacks);
-		}
-		
-		void _afterEach() {
-			runCallbacks(_afterEachCallbacks);
-			afterEach;
-		}
-		
-		void _afterAll() {
-			runCallbacks(_afterAllCallbacks);
-			afterAll;
 		}
 		
 	private:
@@ -92,21 +43,16 @@ debug (featureTest) {
 		string[] _tags;
 		
 		FeatureTestScenario[] _scenarios;
-		FTDelegate[] _beforeEachCallbacks, _afterEachCallbacks, _beforeAllCallbacks, _afterAllCallbacks;
-		
-		void runCallbacks(FTDelegate[] callbacks) {
-			foreach(callback; callbacks) callback();
-		}
 	}
 
 	void feature(T)(string name, string description, void delegate(T) implementation, string[] tags ...) {
-		if (FeatureTestRunner.shouldInclude(tags)) {
+		if (FeatureTestRunner.instance.shouldInclude(tags)) {
 			auto f = new T();
 			f.name = name;
 			f.description = description;
 			f.addTags(tags);
 			implementation(f);
-			FeatureTestRunner.features ~= f;
+			FeatureTestRunner.instance.features ~= f;
 		}
 	}
 

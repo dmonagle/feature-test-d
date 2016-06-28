@@ -3,6 +3,7 @@
 debug (featureTest) {
 	import feature_test.core;
 	import feature_test.exceptions;
+	import feature_test.callbacks;
 
 	import colorize;
 
@@ -15,103 +16,119 @@ debug (featureTest) {
 
 	import core.exception;
 
-	struct FeatureTestRunner {
+	class FeatureTestRunner {
+		mixin FTCallbacks;
+
 		struct Failure {
 			string feature;
 			string scenario;
 			Throwable detail;
 		}
 		
-		static randomize = true;
-		static quiet = false;
+		uint featuresTested;
+		uint scenariosPassed;
 
-		static uint featuresTested;
-		static uint scenariosPassed;
+		FeatureTest[] features; 
+		Failure[] failures;
+		Failure[] pending;
+		string[] onlyTags;
+		string[] ignoreTags;
 
-		static FeatureTest[] features; 
-		static Failure[] failures;
-		static Failure[] pending;
-		static string[] onlyTags;
-		static string[] ignoreTags;
+		this() {
+			randomize = true;
+			quiet = false;
+			_displayWidth = 80;
+		}
+
+		static @property FeatureTestRunner instance() {
+			if (!_runner) _runner = new FeatureTestRunner;
+			return _runner;
+		}
 
 		static this() {
 			import core.runtime;
 
 			writeln("Feature Testing Enabled!".color(fg.light_green));
 			foreach(arg; Runtime.args) {
-				if (arg[0] == '@') { addOnlyTags(arg[1..$].split(",")); }
-				if (arg[0] == '+') { removeIgnoreTags(arg[1..$].split(",")); }
-				else if (arg[0] == '-') { addIgnoreTags(arg[1..$].split(",")); }
-				else if (arg == "quiet") quiet = true;
+				if (arg[0] == '@') { instance.addOnlyTags(arg[1..$].split(",")); }
+				if (arg[0] == '+') { instance.removeIgnoreTags(arg[1..$].split(",")); }
+				else if (arg[0] == '-') { instance.addIgnoreTags(arg[1..$].split(",")); }
+				else if (arg == "quiet") instance.quiet = true;
 			}
 		}
 		
 		static ~this() {
-			if (onlyTags.length) logln("Only including tags: ".color(fg.light_yellow) ~ format(onlyTags.join(", ").color(fg.light_white)));
-			if (ignoreTags.length) logln("Ignoring tags: ".color(fg.light_magenta) ~ format(ignoreTags.join(", ").color(fg.light_white)));
-			if (randomize) {
-				logln("Randomizing Features".color(fg.light_cyan));
-				features.randomShuffle;
+			if (instance.onlyTags.length) instance.logln("Only including tags: ".color(fg.light_yellow) ~ format(instance.onlyTags.join(", ").color(fg.light_white)));
+			if (instance.ignoreTags.length) instance.logln("Ignoring tags: ".color(fg.light_magenta) ~ format(instance.ignoreTags.join(", ").color(fg.light_white)));
+			if (instance.randomize) {
+				instance.logln("Randomizing Features".color(fg.light_cyan));
+				instance.features.randomShuffle;
 			}
 
-			foreach(feature; features) runFeature(feature);
-			writeln(this.toString);
+			instance.runBeforeAll;
+			foreach(feature; _runner.features) {
+				instance.runBeforeEach;
+				_runner.runFeature(feature);
+				instance.runAfterEach;
+			}
+			instance.runAfterAll;
+			writeln(_runner.report);
 		}
 
 		/// Adds the given tag to onlyTags if it doesn't already exist
-		static void addOnlyTag(string tag) {
+		void addOnlyTag(string tag) {
 			if (!onlyTags.canFind(tag)) onlyTags ~= tag;
 		}
 		
 		/// Adds each of the given tags to onlyTags if it doesn't already exist
-		static void addOnlyTags(string[] tags ...) {
+		void addOnlyTags(string[] tags ...) {
 			foreach(tag; tags) addOnlyTag(tag);
 		}
 		
 		/// Adds the given tag to ignoreTags if it doesn't already exist
-		static void addIgnoreTag(string tag) {
+		void addIgnoreTag(string tag) {
 			if (!ignoreTags.canFind(tag)) ignoreTags ~= tag;
 		}
 
 		/// Adds each of the given tags to ignoreTags if it doesn't already exist
-		static void addIgnoreTags(string[] tags ...) {
+		void addIgnoreTags(string[] tags ...) {
 			foreach(tag; tags) addIgnoreTag(tag);
 		}
 		
 
 		/// Removes the given tag to ignoreTags if it exists
-		static void removeIgnoreTag(string tag) {
+		void removeIgnoreTag(string tag) {
 			ignoreTags = array(ignoreTags.filter!(a => a != tag));
 		}
 
 		/// Removes each of the given tags from ignoreTags if they exist
-		static void removeIgnoreTags(string[] tags ...) {
+		void removeIgnoreTags(string[] tags ...) {
 			foreach(tag; tags) removeIgnoreTag(tag);
 		}
 		
 		/// Returns true if a feature with the given tags should be included
-		static bool shouldInclude(string[] tags ...) {
+		bool shouldInclude(string[] tags ...) {
 			foreach(tag; ignoreTags) if (tags.canFind(tag)) return false;
 			if (!onlyTags.length) return true; 
 			foreach(tag; onlyTags) if (tags.canFind(tag)) return true;
 			return false;
 		}
 		
-		static @property scenariosTested() {
+		@property scenariosTested() {
 			return scenariosPassed + failures.length;
 		}
 		
-		static void incFeatures() { featuresTested += 1; }
-		static void incPassed() { scenariosPassed += 1; }
+		void incFeatures() { featuresTested += 1; }
+		void incPassed() { scenariosPassed += 1; }
 
-		static void reset() {
+		void reset() {
 			featuresTested = 0;
 			scenariosPassed = 0;
 			failures = [];
 			pending = [];
 		}
 		
-		static string toString() {
+		string report() {
 			string output;
 
 			if (pending.length) {
@@ -149,37 +166,37 @@ debug (featureTest) {
 		
 		// Functions for indenting output appropriately;
 		
-		static @property ref uint indent() {
+		@property ref uint indent() {
 			return _indent;
 		}
 		
-		static void log(T)(T output) {
+		void log(T)(T output) {
 			auto indentString = indentTabs;
 			output = output.wrap(_displayWidth, indentString, indentString, indentString.length);
 			write(output.stripRight);
 		}
 		
-		static void logln(T)(T output) {
+		void logln(T)(T output) {
 			auto indentString = indentTabs;
 			output = output.wrap(_displayWidth, indentString, indentString, indentString.length);
 			write(output);
 		}
 		
-		static void logf(T, A ...)(T fmt, A args) {
+		void logf(T, A ...)(T fmt, A args) {
 			auto output = format(fmt, args);
 			log(output);
 		}
 		
-		static void logfln(T, A ...)(T fmt, A args) {
+		void logfln(T, A ...)(T fmt, A args) {
 			logf(fmt, args);
 			writeln();
 		}
 		
-		static void info(A ...)(string fmt, A args) {
+		void info(A ...)(string fmt, A args) {
 			logfln(fmt.color(fg.light_blue), args);
 		}
 
-		static void runFeature(FeatureTest feature) {
+		void runFeature(FeatureTest feature) {
 			incFeatures;
 			string tagsDescription;
 
@@ -194,14 +211,14 @@ debug (featureTest) {
 				writeln();
 			}
 			
-			feature._beforeAll();
+			feature.runBeforeAll;
 			
 			logln("Scenarios:".color(fg.light_cyan));
 			++indent; // Indent the scenarios
 			foreach(scenario; feature.scenarios) {
 				bool scenarioPass = true;
 				
-				feature._beforeEach;
+				feature.runBeforeEach;
 				logfln("%s".color(fg.light_white, bg.init, mode.bold), scenario.name);
 				++indent;
 				try {
@@ -233,21 +250,25 @@ debug (featureTest) {
 					incPassed;
 				}
 				--indent;
-				feature._afterEach;
+				feature.runAfterEach;
 			}
 			--indent; // Unindent the scenarios
-			feature._afterAll;
+			feature.runAfterAll;
 			--indent;
 			writeln();
 		}
 		
 	private:
+		static FeatureTestRunner _runner; // The instance
+
 		// For display purposes
-		static uint _indent; // Holds the current level of indentation
-		static enum _tabString = "    ";
-		static _displayWidth = 80;
+		uint _indent; // Holds the current level of indentation
+		enum _tabString = "    ";
+		uint _displayWidth;
+		bool randomize;
+		bool quiet;
 		
-		static @property string indentTabs() {
+		@property string indentTabs() {
 			string tabs;
 			for(uint count = 0; count < _indent; ++count) tabs ~= _tabString;
 			return tabs;
